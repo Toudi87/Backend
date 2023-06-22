@@ -48,7 +48,7 @@ pipeline {
                 }
             }
         }
-        stage('Pushing application to Artifactory/DockerHub') {
+        stage('Pushing application to Artifactory') {
             steps {
                 script{
                     docker.withRegistry("$dockerRegistry", "$registryCredentials") {
@@ -57,23 +57,6 @@ pipeline {
                     }
                 }
             }
-        }
-        stage ('Push to repo') {
-                steps {
-                    dir('ArgoCD') {
-                        withCredentials([gitUsernamePassword(credentialsId: 'git', gitToolName: 'Default')]) {
-                            git branch: 'main', url: 'https://github.com/mwocka/ArgoCD.git'
-                            sh """ cd backend
-                            git config --global user.email "mateusz.wocka@gmail.com"
-                            git config --global user.name "mwocka"
-                            sed -i "s#$imageName.*#$imageName:$dockerTag#g" deployment.yaml
-                            git commit -am "Set new $dockerTag tag."
-                            git diff
-                            git push origin main
-                            """
-                        }                  
-                    } 
-                }
         }
     }
     post {
